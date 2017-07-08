@@ -1,0 +1,2 @@
+FROM ubuntu:16.04
+CMD COUNT=0 && while true; do COUNT=$((COUNT + 1)) && echo "$COUNT" && sleep 1; done
