@@ -9,6 +9,7 @@ import (
 	"strconv"
 
 	"github.com/ahmetb/dlog"
+	"github.com/docker-gui/docker/common"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
 )
@@ -18,8 +19,8 @@ const defaultLogTimestamp = "false"
 
 // LogsResponse is the data returned by the Logs endpoint
 type LogsResponse struct {
-	Output    string       `json:"output"`
-	Container containerObj `json:"container"`
+	Output    string              `json:"output"`
+	Container common.ContainerObj `json:"container"`
 }
 
 // Logs returns the latest logs from a container
@@ -29,10 +30,10 @@ func Logs(cli *client.Client, params url.Values) (data []byte, err error) {
 		id           string
 		logTimestamp bool
 	)
-	if id, err = getRequiredParam(params, paramContainerID); err != nil {
+	if id, err = common.GetRequiredParam(params, common.ParamID); err != nil {
 		return
 	}
-	if logTimestamp, err = strconv.ParseBool(getDefaultedParam(params, paramLogTimestamp, defaultLogTimestamp)); err != nil {
+	if logTimestamp, err = strconv.ParseBool(common.GetDefaultedParam(params, paramLogTimestamp, defaultLogTimestamp)); err != nil {
 		return
 	}
 	options := types.ContainerLogsOptions{ShowStdout: true, ShowStderr: true, Timestamps: logTimestamp, Follow: false}
@@ -43,7 +44,7 @@ func Logs(cli *client.Client, params url.Values) (data []byte, err error) {
 	var b []byte
 	b, err = ioutil.ReadAll(dlog.NewReader(out))
 	response.Output = string(b)
-	response.Container = containerObj{ID: id}
+	response.Container = common.ContainerObj{ID: id}
 	data, err = json.Marshal(response)
 	return
 }

@@ -9,6 +9,7 @@ import (
 	"os"
 
 	"github.com/docker-gui/docker/container"
+	"github.com/docker-gui/docker/image"
 	"github.com/docker/docker/client"
 	"github.com/gorilla/mux"
 
@@ -33,11 +34,13 @@ type errorResponse struct {
 
 var containerCommands = map[string]dockerCommand{
 	"list": container.List,
-	"run":  container.Run,
 	"logs": container.Logs,
 	"stop": container.Stop,
 }
-var imageCommands = map[string]dockerCommand{}
+var imageCommands = map[string]dockerCommand{
+	"list": image.List,
+	"run":  image.Run,
+}
 
 func mapJSONEndpoints(commands map[string]dockerCommand) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {

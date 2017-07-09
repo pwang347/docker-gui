@@ -7,15 +7,19 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/docker-gui/docker/common"
 	"github.com/docker/docker/client"
 )
 
 const paramStopForce = "force"
-const defaultStopForce = "false"
+const (
+	defaultTimeoutDuration = time.Duration(5) * time.Second
+	defaultStopForce       = "false"
+)
 
 // StopResponse is the data returned by the Stop endpoint
 type StopResponse struct {
-	Container containerObj `json:"container"`
+	Container common.ContainerObj `json:"container"`
 }
 
 // Stop stops a running container and returns its id
@@ -23,13 +27,13 @@ func Stop(cli *client.Client, params url.Values) (data []byte, err error) {
 	var (
 		response  StopResponse
 		id        string
-		timeout   = time.Duration(5) * time.Second
+		timeout   = defaultTimeoutDuration
 		forceStop bool
 	)
-	if id, err = getRequiredParam(params, paramContainerID); err != nil {
+	if id, err = common.GetRequiredParam(params, common.ParamID); err != nil {
 		return
 	}
-	if forceStop, err = strconv.ParseBool(getDefaultedParam(params, paramStopForce, defaultStopForce)); err != nil {
+	if forceStop, err = strconv.ParseBool(common.GetDefaultedParam(params, paramStopForce, defaultStopForce)); err != nil {
 		return
 	}
 	if forceStop {
@@ -41,7 +45,7 @@ func Stop(cli *client.Client, params url.Values) (data []byte, err error) {
 			return
 		}
 	}
-	response.Container = containerObj{ID: id}
+	response.Container = common.ContainerObj{ID: id}
 	data, err = json.Marshal(response)
 	return
 }

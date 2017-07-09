@@ -1,9 +1,10 @@
-package container
+package image
 
 import (
 	"encoding/json"
 	"net/url"
 
+	"github.com/docker-gui/docker/common"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
@@ -19,7 +20,7 @@ const defaultRunRegistry string = "docker.io/library/"
 
 // RunResponse is the data returned by the Run endpoint
 type RunResponse struct {
-	Container containerObj `json:"container"`
+	Container common.ContainerObj `json:"container"`
 }
 
 // Run starts a new container and returns its container id
@@ -30,10 +31,10 @@ func Run(cli *client.Client, params url.Values) (data []byte, err error) {
 		image    string
 		registry string
 	)
-	if image, err = getRequiredParam(params, paramRunImage); err != nil {
+	if image, err = common.GetRequiredParam(params, paramRunImage); err != nil {
 		return
 	}
-	registry = getDefaultedParam(params, paramRunRegistry, defaultRunRegistry)
+	registry = common.GetDefaultedParam(params, paramRunRegistry, defaultRunRegistry)
 	if _, err = cli.ImagePull(ctx, registry+image, types.ImagePullOptions{}); err != nil {
 		return
 	}
@@ -47,7 +48,7 @@ func Run(cli *client.Client, params url.Values) (data []byte, err error) {
 	if err = cli.ContainerStart(ctx, resp.ID, types.ContainerStartOptions{}); err != nil {
 		return
 	}
-	response.Container = containerObj{ID: resp.ID, Image: image}
+	response.Container = common.ContainerObj{ID: resp.ID, Image: image}
 	data, err = json.Marshal(response)
 	return
 }
