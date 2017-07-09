@@ -14,7 +14,7 @@ import (
 )
 
 const paramLogTimestamp = "timestamp"
-const defaultLogTimestamp = false
+const defaultLogTimestamp = "false"
 
 // LogsResponse is the data returned by the Logs endpoint
 type LogsResponse struct {
@@ -23,13 +23,17 @@ type LogsResponse struct {
 }
 
 // Logs returns the latest logs from a container
-func Logs(cli *client.Client, id string, params url.Values) (data []byte, err error) {
+func Logs(cli *client.Client, params url.Values) (data []byte, err error) {
 	var (
 		response     LogsResponse
+		id           string
 		logTimestamp bool
 	)
-	if logTimestamp, err = strconv.ParseBool(params.Get(paramLogTimestamp)); err != nil {
-		logTimestamp = defaultLogTimestamp
+	if id, err = getRequiredParam(params, paramContainerID); err != nil {
+		return
+	}
+	if logTimestamp, err = strconv.ParseBool(getDefaultedParam(params, paramLogTimestamp, defaultLogTimestamp)); err != nil {
+		return
 	}
 	options := types.ContainerLogsOptions{ShowStdout: true, ShowStderr: true, Timestamps: logTimestamp, Follow: false}
 	var out io.ReadCloser

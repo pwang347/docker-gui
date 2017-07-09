@@ -11,7 +11,7 @@ import (
 )
 
 const paramListLimit = "limit"
-const defaultListLimit = -1
+const defaultListLimit = "-1"
 
 // ListResponse is the data returned by the List endpoint
 type ListResponse struct {
@@ -25,8 +25,8 @@ func List(cli *client.Client, params url.Values) (data []byte, err error) {
 		response  ListResponse
 		listLimit int
 	)
-	if listLimit, err = strconv.Atoi(params.Get(paramListLimit)); err != nil {
-		listLimit = defaultListLimit
+	if listLimit, err = strconv.Atoi(getDefaultedParam(params, paramListLimit, defaultListLimit)); err != nil {
+		return
 	}
 	options := types.ContainerListOptions{Limit: listLimit}
 	var containers []types.Container

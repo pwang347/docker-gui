@@ -1,9 +1,3 @@
-// Copyright 2010 The Go Authors. All rights reserved.
-
-// Use of this source code is governed by a BSD-style
-
-// license that can be found in the LICENSE file.
-
 package main
 
 import (
@@ -30,8 +24,9 @@ var (
 	ctx          context.Context
 )
 
-type dockerCommand func(*client.Client, url.Values) ([]byte, error)
-type dockerTargetedCommand func(*client.Client, string, url.Values) ([]byte, error)
+const errorNotFound = "not-found"
+
+type dockerCommand func(cli *client.Client, params url.Values) ([]byte, error)
 type errorResponse struct {
 	Error string `json:"error"`
 }
@@ -39,87 +34,36 @@ type errorResponse struct {
 var containerCommands = map[string]dockerCommand{
 	"list": container.List,
 	"run":  container.Run,
-}
-var containerTargetedCommands = map[string]dockerTargetedCommand{
 	"logs": container.Logs,
 	"stop": container.Stop,
 }
 var imageCommands = map[string]dockerCommand{}
-var imageTargetedCommands = map[string]dockerTargetedCommand{}
 
-func containerHandler(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	if cmd, ok := containerCommands[vars["action"]]; ok {
-		var (
-			data []byte
-			err  error
-		)
-		if data, err = cmd(dockerClient, r.URL.Query()); err != nil {
-			data, _ = json.Marshal(errorResponse{Error: err.Error()})
+func mapJSONEndpoints(commands map[string]dockerCommand) func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		if cmd, ok := commands[vars["action"]]; ok {
+			var (
+				data []byte
+				err  error
+			)
+			w.Header().Set("Content-Type", "application/json")
+			data, err = cmd(dockerClient, r.URL.Query())
+			if err != nil {
+				if err.Error() == errorNotFound {
+					http.NotFound(w, r)
+					return
+				}
+				data, _ = json.Marshal(errorResponse{Error: err.Error()})
+				w.WriteHeader(http.StatusInternalServerError)
+				w.Write(data)
+				return
+			}
+			w.WriteHeader(http.StatusOK)
+			w.Write(data)
+			return
 		}
-		w.Header().Set("Content-Type", "application/json")
-		w.Write(data)
-		w.WriteHeader(http.StatusOK)
-	} else {
 		http.NotFound(w, r)
-		return
-	}
-}
-
-func containerTargetedHandler(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	if cmd, ok := containerTargetedCommands[vars["action"]]; ok {
-		var (
-			data []byte
-			err  error
-		)
-		if data, err = cmd(dockerClient, vars["id"], r.URL.Query()); err != nil {
-			data, _ = json.Marshal(errorResponse{Error: err.Error()})
-		}
-		w.Header().Set("Content-Type", "application/json")
-		w.Write(data)
-		w.WriteHeader(http.StatusOK)
-	} else {
-		http.NotFound(w, r)
-		return
-	}
-}
-
-func imageHandler(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	if cmd, ok := imageCommands[vars["action"]]; ok {
-		var (
-			data []byte
-			err  error
-		)
-		if data, err = cmd(dockerClient, r.URL.Query()); err != nil {
-			data, _ = json.Marshal(errorResponse{Error: err.Error()})
-		}
-		w.Header().Set("Content-Type", "application/json")
-		w.Write(data)
-		w.WriteHeader(http.StatusOK)
-	} else {
-		http.NotFound(w, r)
-		return
-	}
-}
-
-func imageTargetedHandler(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	if cmd, ok := imageTargetedCommands[vars["action"]]; ok {
-		var (
-			data []byte
-			err  error
-		)
-		if data, err = cmd(dockerClient, vars["id"], r.URL.Query()); err != nil {
-			data, _ = json.Marshal(errorResponse{Error: err.Error()})
-		}
-		w.Header().Set("Content-Type", "application/json")
-		w.Write(data)
-		w.WriteHeader(http.StatusOK)
-	} else {
-		http.NotFound(w, r)
-		return
 	}
 }
 
@@ -135,10 +79,8 @@ func main() {
 	}
 
 	r := mux.NewRouter()
-	r.HandleFunc("/api/containers/{action}", containerHandler)
-	r.HandleFunc("/api/images/{action}", imageHandler)
-	r.HandleFunc("/api/containers/{id}/{action}", containerTargetedHandler)
-	r.HandleFunc("/api/images/{id}/{action}", imageTargetedHandler)
+	r.HandleFunc("/api/containers/{action}", mapJSONEndpoints(containerCommands))
+	r.HandleFunc("/api/images/{action}", mapJSONEndpoints(imageCommands))
 	http.Handle("/", r)
 
 	fmt.Println(fmt.Sprintf("Starting docker-gui webserver at http://localhost:%d...", *port))

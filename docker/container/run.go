@@ -2,7 +2,6 @@ package container
 
 import (
 	"encoding/json"
-	"errors"
 	"net/url"
 
 	"github.com/docker/docker/api/types"
@@ -31,13 +30,10 @@ func Run(cli *client.Client, params url.Values) (data []byte, err error) {
 		image    string
 		registry string
 	)
-	if image = params.Get(paramRunImage); image == "" {
-		err = errors.New("no image provided to run")
+	if image, err = getRequiredParam(params, paramRunImage); err != nil {
 		return
 	}
-	if registry = params.Get(paramRunRegistry); registry == "" {
-		registry = defaultRunRegistry
-	}
+	registry = getDefaultedParam(params, paramRunRegistry, defaultRunRegistry)
 	if _, err = cli.ImagePull(ctx, registry+image, types.ImagePullOptions{}); err != nil {
 		return
 	}
