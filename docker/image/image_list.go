@@ -16,7 +16,7 @@ type ListResponse struct {
 	Images []common.ImageObj `json:"images"`
 }
 
-// List shows list of containers
+// List shows list of images
 func List(cli *client.Client, params url.Values) (data []byte, err error) {
 	var (
 		response ListResponse
