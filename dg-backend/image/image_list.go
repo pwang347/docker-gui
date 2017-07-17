@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"net/url"
 
-	"github.com/docker-gui/docker/common"
+	"github.com/docker-gui/dg-backend/common"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
 )
@@ -19,7 +19,7 @@ type ListResponse struct {
 // List shows list of images
 func List(cli *client.Client, params url.Values) (data []byte, err error) {
 	var (
-		response ListResponse
+		response = ListResponse{Count: 0, Images: []common.ImageObj{}}
 	)
 	options := types.ImageListOptions{}
 	var images []types.ImageSummary
@@ -27,7 +27,7 @@ func List(cli *client.Client, params url.Values) (data []byte, err error) {
 		return
 	}
 	for _, image := range images {
-		response.Images = append(response.Images, common.ImageObj{ID: image.ID})
+		response.Images = append(response.Images, common.ImageObj{ID: image.ID, RepoTags: image.RepoTags})
 	}
 	response.Count = len(images)
 	data, err = json.Marshal(response)

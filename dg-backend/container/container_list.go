@@ -6,7 +6,7 @@ import (
 	"net/url"
 	"strconv"
 
-	"github.com/docker-gui/docker/common"
+	"github.com/docker-gui/dg-backend/common"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
 )
@@ -23,7 +23,7 @@ type ListResponse struct {
 // List shows list of containers
 func List(cli *client.Client, params url.Values) (data []byte, err error) {
 	var (
-		response  ListResponse
+		response  = ListResponse{Count: 0, Containers: []common.ContainerObj{}}
 		listLimit int
 	)
 	if listLimit, err = strconv.Atoi(common.GetDefaultedParam(params, paramListLimit, defaultListLimit)); err != nil {

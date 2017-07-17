@@ -13,7 +13,8 @@ type ContainerObj struct {
 
 // ImageObj represents an abstraction of a Docker image
 type ImageObj struct {
-	ID string `json:"id"`
+	ID       string   `json:"id"`
+	RepoTags []string `json:"repotags"`
 }
 
 // ParamID is the query parameter for both container and image IDs

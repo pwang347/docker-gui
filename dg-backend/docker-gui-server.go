@@ -8,8 +8,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/docker-gui/docker/container"
-	"github.com/docker-gui/docker/image"
+	"github.com/docker-gui/dg-backend/container"
+	"github.com/docker-gui/dg-backend/image"
 	"github.com/docker/docker/client"
 	"github.com/gorilla/mux"
 
@@ -44,6 +44,7 @@ var imageCommands = map[string]dockerCommand{
 
 func mapJSONEndpoints(commands map[string]dockerCommand) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
 		vars := mux.Vars(r)
 		if cmd, ok := commands[vars["action"]]; ok {
 			var (
