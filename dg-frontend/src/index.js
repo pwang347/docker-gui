@@ -2,10 +2,12 @@ import React from "react";
 import ReactDOM from "react-dom";
 import "./index.css";
 import { ImageListing } from "./Image";
+import { ContainerListing } from "./Container";
 import { Sidebar } from "./App";
 import registerServiceWorker from "./registerServiceWorker";
 import MuiThemeProvider from "material-ui/styles/MuiThemeProvider";
-import AppBar from "material-ui/AppBar";
+import { Route } from "react-router";
+import { BrowserRouter } from "react-router-dom";
 /*
 ReactDOM.render(<App />, document.getElementById("root"));
 ReactDOM.render(<Sidebar />, document.getElementById("test"));
@@ -14,14 +16,13 @@ ReactDOM.render(
   <div>
     <MuiThemeProvider>
       <div>
-        <div style={{ "padding-left": "256px" }}>
-          <AppBar
-            title="Title"
-            iconClassNameRight="muidocs-icon-navigation-expand-more"
-          />
-        </div>
         <Sidebar />
-        <ImageListing subreddit="reactjs" />
+        <BrowserRouter>
+          <div>
+            <Route path="/images" component={ImageListing} />
+            <Route path="/containers" component={ContainerListing} />
+          </div>
+        </BrowserRouter>
       </div>
     </MuiThemeProvider>
   </div>,

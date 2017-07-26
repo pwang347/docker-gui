@@ -39,8 +39,24 @@ export class Sidebar extends React.Component {
       <div>
         <RaisedButton label="Toggle Drawer" onTouchTap={this.handleToggle} />
         <Drawer open={this.state.open} docked="true">
-          <MenuItem>Images</MenuItem>
-          <MenuItem>Containers</MenuItem>
+          <MenuItem
+            onClick={() => {
+              if (window.location.pathname != "/images") {
+                window.location.replace("/images");
+              }
+            }}
+          >
+            Images
+          </MenuItem>
+          <MenuItem
+            onClick={() => {
+              if (window.location.pathname != "/containers") {
+                window.location.replace("/containers");
+              }
+            }}
+          >
+            Containers
+          </MenuItem>
         </Drawer>
       </div>
     );

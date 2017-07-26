@@ -10,20 +10,20 @@ import {
 import CircularProgress from "material-ui/CircularProgress";
 import AppBar from "material-ui/AppBar";
 
-export class ImageListing extends React.Component {
+export class ContainerListing extends React.Component {
   constructor(props) {
     super(props);
 
     this.state = {
       ready: false,
       count: 0,
-      images: []
+      containers: []
     };
   }
 
   componentDidMount() {
     var self = this;
-    var url = "http://localhost:8080/api/images/list";
+    var url = "http://localhost:8080/api/containers/list";
     fetch(url)
       .then(function(response) {
         if (response.status >= 400) {
@@ -33,10 +33,14 @@ export class ImageListing extends React.Component {
       })
       .then(function(json) {
         console.log("parsed json", json);
-        self.setState({ ready: true, count: json.count, images: json.images });
+        self.setState({
+          ready: true,
+          count: json.count,
+          containers: json.containers
+        });
       })
       .catch(function(ex) {
-        self.setState({ ready: true, count: 0, images: [] });
+        self.setState({ ready: true, count: 0, containers: [] });
         throw new Error(`Could not parse json from {url}`);
       });
   }
@@ -45,7 +49,7 @@ export class ImageListing extends React.Component {
     return (
       <div style={{ "padding-left": "256px" }}>
         <AppBar
-          title="Images"
+          title="Containers"
           iconClassNameRight="muidocs-icon-navigation-expand-more"
         />
         {this.state.ready
@@ -59,13 +63,13 @@ export class ImageListing extends React.Component {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {this.state.images.map((data, index) =>
+                  {this.state.containers.map((data, index) =>
                     <TableRow>
                       <TableRowColumn>
                         {index + 1}
                       </TableRowColumn>
                       <TableRowColumn>
-                        {data.repotags.join(", ")}
+                        {data.image}
                       </TableRowColumn>
                       <TableRowColumn>
                         {data.id}
@@ -81,7 +85,7 @@ export class ImageListing extends React.Component {
   }
 }
 
-class ImageTable extends React.Component {
+class ContainerTable extends React.Component {
   render() {
     /* the ES6 version of const data = this.props.data */
     const { data } = this.props;
@@ -94,8 +98,8 @@ class ImageTable extends React.Component {
         <td key={"index" + index}>
           {index + 1}
         </td>
-        <td key={data.repotags}>
-          {data.repotags}
+        <td key={data.image}>
+          {data.image}
         </td>
         <td key={data.id}>
           {data.id}
@@ -107,7 +111,7 @@ class ImageTable extends React.Component {
         <tbody>
           <tr>
             <th>Index</th>
-            <th>Tags</th>
+            <th>Image</th>
             <th>ID</th>
           </tr>
           {row}
