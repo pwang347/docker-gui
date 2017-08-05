@@ -25,7 +25,6 @@ const deltaStyle = {"paddingLeft": "272px"}
 export class App extends React.Component {
   constructor(props) {
     super(props);
-    this.renderFromActive.bind(this)
     this.state = {
       redirected: false,
       activeRoute: window.location.href.pathname // undefined until we click a different navigation tab
@@ -59,9 +58,6 @@ export class App extends React.Component {
 }
 
 class Content extends React.Component {
-  constructor(props) {
-    super(props);
-  }
   render() {
     return <div>
       <Title data={this.props.title}/>
@@ -71,9 +67,6 @@ class Content extends React.Component {
 }
 
 class Title extends React.Component {
-  constructor(props) {
-    super(props);
-  }
   render() {
     return <AppBar title={this.props.data} iconClassNameRight="muidocs-icon-navigation-expand-more" />
   }
@@ -95,16 +88,13 @@ class NavigationBar extends React.Component {
         <Drawer open={this.state.open}>
           {Object.keys(this.state.routes).map((key, index) =>
             <MenuItem key={index} onClick={() => {
-              console.log(key)
               if (window.location.pathname !== key) {
-                //window.location.replace(key);
                 window.history.pushState("", "", key);
                 this.props.selectRoute(key)
               }
             }}
             >
-              <p>
-                {routes[key].name}</p>
+            <p>{routes[key].name}</p>
             </MenuItem>
           )}
         </Drawer>

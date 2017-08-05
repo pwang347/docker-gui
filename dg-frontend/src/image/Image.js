@@ -4,7 +4,6 @@ import {
   TableBody,
   TableHeader,
   TableHeaderColumn,
-  TableFooter,
   TableRow,
   TableRowColumn
 } from "material-ui/Table";
@@ -41,14 +40,9 @@ export class ImageView extends React.Component {
       });
   }
 
-  render() {
-    return (
-      <div>
-        {this.state.ready
-          ? <div>
-            <Table>
-              <TableHeader displaySelectAll={false}
-                adjustForCheckbox={false}>
+  renderTable(){
+    return <Table>
+              <TableHeader displaySelectAll={false} adjustForCheckbox={false}>
                 <TableRow>
                   <TableHeaderColumn>Tags</TableHeaderColumn>
                   <TableHeaderColumn>ID</TableHeaderColumn>
@@ -66,14 +60,12 @@ export class ImageView extends React.Component {
                   </TableRow>
                 )}
               </TableBody>
-              <TableFooter
-                adjustForCheckbox={false}
-              >
-
-              </TableFooter>
             </Table>
-          </div>
-          : <CircularProgress />}
+  }
+  render() {
+    return (
+      <div>
+        {this.state.ready ? this.renderTable() : <CircularProgress />}
       </div>
     );
   }

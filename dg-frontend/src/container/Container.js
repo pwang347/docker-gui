@@ -44,37 +44,33 @@ export class ContainerView extends React.Component {
       });
   }
 
-  render() {
-    return (
-      <div>
-        {this.state.ready
-          ? <div>
-            <Table>
-              <TableHeader>
+  renderTable(){
+    return <Table>
+              <TableHeader displaySelectAll={false} adjustForCheckbox={false}>
                 <TableRow>
-                  <TableHeaderColumn>Index</TableHeaderColumn>
                   <TableHeaderColumn>Tags</TableHeaderColumn>
                   <TableHeaderColumn>ID</TableHeaderColumn>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {this.state.containers.map((data, index) =>
+                {this.state.containers.map((container, index) =>
                   <TableRow>
                     <TableRowColumn>
-                      {index + 1}
+                      {container.image}
                     </TableRowColumn>
                     <TableRowColumn>
-                      {data.image}
-                    </TableRowColumn>
-                    <TableRowColumn>
-                      {data.id}
+                      {container.id}
                     </TableRowColumn>
                   </TableRow>
                 )}
               </TableBody>
             </Table>
-          </div>
-          : <CircularProgress />}
+  }
+
+  render() {
+    return (
+      <div>
+        {this.state.ready ? this.renderTable() : <CircularProgress />}
       </div>
     );
   }
