@@ -17,13 +17,13 @@ import (
 const paramLogTimestamp = "timestamp"
 const defaultLogTimestamp = "false"
 
-// LogsResponse is the data returned by the Logs endpoint
+// LogsResponse is the data returned by the Logs endpoint.
 type LogsResponse struct {
 	Output    string              `json:"output"`
 	Container common.ContainerObj `json:"container"`
 }
 
-// Logs returns the latest logs from a container
+// Logs returns the latest logs from a container.
 func Logs(cli *client.Client, params url.Values) (data []byte, err error) {
 	var (
 		response     LogsResponse

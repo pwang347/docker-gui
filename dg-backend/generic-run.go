@@ -1,4 +1,8 @@
-package image
+/*
+	This isn't exactly running from a known image, so we'll keep it archived here for now.
+*/
+
+package main
 
 import (
 	"encoding/json"
@@ -12,7 +16,8 @@ import (
 )
 
 const (
-	paramRunImageID string = "id"
+	paramRunImage    string = "image"
+	paramRunRegistry string = "registry"
 )
 
 const defaultRunRegistry string = "docker.io/library/"
@@ -27,14 +32,19 @@ func Run(cli *client.Client, params url.Values) (data []byte, err error) {
 	ctx := context.Background()
 	var (
 		response RunResponse
-		imageID  string
+		image    string
+		registry string
 	)
-	if imageID, err = common.GetRequiredParam(params, paramRunImageID); err != nil {
+	if image, err = common.GetRequiredParam(params, paramRunImage); err != nil {
+		return
+	}
+	registry = common.GetDefaultedParam(params, paramRunRegistry, defaultRunRegistry)
+	if _, err = cli.ImagePull(ctx, registry+image, types.ImagePullOptions{}); err != nil {
 		return
 	}
 	var resp container.ContainerCreateCreatedBody
 	if resp, err = cli.ContainerCreate(ctx, &container.Config{
-		Image: imageID,
+		Image: image,
 		Cmd:   []string{},
 	}, nil, nil, ""); err != nil {
 		return
@@ -42,7 +52,7 @@ func Run(cli *client.Client, params url.Values) (data []byte, err error) {
 	if err = cli.ContainerStart(ctx, resp.ID, types.ContainerStartOptions{}); err != nil {
 		return
 	}
-	response.Container = common.ContainerObj{ID: resp.ID, Image: imageID}
+	response.Container = common.ContainerObj{ID: resp.ID, Image: image}
 	data, err = json.Marshal(response)
 	return
 }

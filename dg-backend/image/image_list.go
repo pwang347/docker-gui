@@ -3,6 +3,7 @@ package image
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/url"
 
 	"github.com/docker-gui/dg-backend/common"
@@ -27,7 +28,8 @@ func List(cli *client.Client, params url.Values) (data []byte, err error) {
 		return
 	}
 	for _, image := range images {
-		response.Images = append(response.Images, common.ImageObj{ID: image.ID, RepoTags: image.RepoTags})
+		fmt.Println(image.ID)
+		response.Images = append(response.Images, common.ImageObj{ID: common.StripIDPrefix(image.ID), RepoTags: image.RepoTags})
 	}
 	response.Count = len(images)
 	data, err = json.Marshal(response)
