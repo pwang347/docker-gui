@@ -9,7 +9,7 @@ import {
 } from "material-ui/Table";
 import CircularProgress from "material-ui/CircularProgress";
 import RaisedButton from "material-ui/RaisedButton";
-import truncateLongString from "../common.js";
+import { truncateLongString, BACKEND_ROOT_URL } from "../common";
 
 export class ImageView extends React.Component {
   constructor(props) {
@@ -25,7 +25,7 @@ export class ImageView extends React.Component {
 
   componentDidMount() {
     var self = this;
-    var url = "http://localhost:8080/api/images/list";
+    var url = BACKEND_ROOT_URL + "/api/images/list";
     fetch(url)
       .then(function(response) {
         if (response.status >= 400) {
@@ -34,7 +34,7 @@ export class ImageView extends React.Component {
         return response.json();
       })
       .then(function(json) {
-        console.log("parsed json", json);
+        console.log("Updated image list", json);
         return json;
       })
       .then(function(json) {
@@ -61,7 +61,7 @@ export class ImageView extends React.Component {
       "info"
     );
     var self = this;
-    var url = "http://localhost:8080/api/images/run?id=" + selectedImage.id;
+    var url = BACKEND_ROOT_URL + "/api/images/run?id=" + selectedImage.id;
     fetch(url)
       .then(function(response) {
         if (response.status >= 400) {
@@ -70,7 +70,7 @@ export class ImageView extends React.Component {
         return response.json();
       })
       .then(function(json) {
-        console.log("parsed json", json);
+        console.log("Retrieved ID of running container", json);
         return json;
       })
       .then(function(json) {

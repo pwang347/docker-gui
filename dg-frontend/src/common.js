@@ -1,4 +1,4 @@
-const truncateLongString = function(str, len) {
+export const truncateLongString = function(str, len) {
   if (len > str.length) {
     return str;
   } else {
@@ -6,4 +6,5 @@ const truncateLongString = function(str, len) {
   }
 };
 
-export default truncateLongString;
+export const BACKEND_ROOT_URL =
+  process.env.REACT_APP_BACKEND_ROOT_URL || "http://localhost:8080";

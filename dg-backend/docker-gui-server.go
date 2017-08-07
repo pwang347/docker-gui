@@ -9,6 +9,7 @@ import (
 	"os"
 
 	"github.com/docker-gui/dg-backend/container"
+	"github.com/docker-gui/dg-backend/health"
 	"github.com/docker-gui/dg-backend/image"
 	"github.com/docker/docker/client"
 	"github.com/gorilla/mux"
@@ -32,6 +33,9 @@ type errorResponse struct {
 	Error string `json:"error"`
 }
 
+var healthCommands = map[string]dockerCommand{
+	"summary": health.Summary,
+}
 var containerCommands = map[string]dockerCommand{
 	"list": container.List,
 	"logs": container.Logs,
@@ -85,6 +89,7 @@ func main() {
 	r := mux.NewRouter()
 	r.HandleFunc("/api/containers/{action}", mapJSONEndpoints(containerCommands))
 	r.HandleFunc("/api/images/{action}", mapJSONEndpoints(imageCommands))
+	r.HandleFunc("/api/health/{action}", mapJSONEndpoints(healthCommands))
 	http.Handle("/", r)
 
 	fmt.Println(fmt.Sprintf("Starting docker-gui webserver at http://localhost:%d...", *port))

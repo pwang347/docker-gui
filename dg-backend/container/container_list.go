@@ -14,13 +14,13 @@ import (
 const paramListLimit = "limit"
 const defaultListLimit = "-1"
 
-// ListResponse is the data returned by the List endpoint
+// ListResponse is the data returned by the List endpoint.
 type ListResponse struct {
 	Count      int                   `json:"count"`
 	Containers []common.ContainerObj `json:"containers"`
 }
 
-// List shows list of containers
+// List shows list of containers.
 func List(cli *client.Client, params url.Values) (data []byte, err error) {
 	var (
 		response  = ListResponse{Count: 0, Containers: []common.ContainerObj{}}

@@ -12,12 +12,19 @@ import { Route } from "react-router";
 import { BrowserRouter } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.min.css";
+import { BACKEND_ROOT_URL } from "../common";
 
 // Needed for onTouchTap
 // http://stackoverflow.com/a/34015469/988941
 injectTapEventPlugin();
 
 const routes = {
+  "/": {
+    name: "Overview",
+    component: function(toastFn) {
+      return <p>Welcome!</p>;
+    }
+  },
   "/images": {
     name: "Images",
     component: function(toastFn) {
@@ -44,16 +51,20 @@ const routes = {
   }
 };
 
-const deltaStyle = { paddingLeft: "272px" };
-const onTopStyle = {
+const STYLE_PADDED = { paddingLeft: "272px" };
+const STYLE_ABOVE = {
   position: "fixed",
   zIndex: 999999
 };
+
+const MAX_HEALTH_CHECKS = 5;
 
 export class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      backendOkay: undefined,
+      failedPings: 0,
       redirected: false,
       activeRoute: window.location.href.pathname // undefined until we click a different navigation tab
     };
@@ -91,7 +102,6 @@ export class App extends React.Component {
     return (
       <BrowserRouter>
         <div>
-          <Route exact path="/" render={() => <p>Welcome Page</p>} />
           {Object.keys(routes).map((key, index) =>
             <Route
               exact
@@ -108,6 +118,52 @@ export class App extends React.Component {
       </BrowserRouter>
     );
   }
+  healthcheck() {
+    if (
+      this.state.backendOkay === true ||
+      this.state.failedPings === MAX_HEALTH_CHECKS
+    ) {
+      clearInterval(this.interval);
+      return;
+    }
+    var self = this;
+    var url = BACKEND_ROOT_URL + "/api/health/summary";
+    fetch(url)
+      .then(function(response) {
+        if (response.status >= 400) {
+          throw new Error("Bad response from server");
+        }
+        return response.json();
+      })
+      .catch(this.failedCheck.bind(this))
+      .then(function(json) {
+        self.setState({
+          backendOkay: true
+        });
+        console.log("Health check OK", json);
+        return json;
+      })
+      .catch(this.failedCheck.bind(this));
+  }
+  failedCheck(ex) {
+    this.setState({
+      failedPings: this.state.failedPings + 1
+    });
+    if (this.state.failedPings === MAX_HEALTH_CHECKS) {
+      this.setState({
+        backendOkay: false
+      });
+    }
+  }
+  componentDidMount() {
+    this.healthcheck.bind(this);
+    this.interval = setInterval(this.healthcheck.bind(this), 1000);
+  }
+  componentWillUnmount() {
+    if (this.interval !== undefined) {
+      clearInterval(this.interval);
+    }
+  }
   render() {
     return (
       <div>
@@ -118,16 +174,18 @@ export class App extends React.Component {
           newestOnTop={false}
           closeOnClick
           pauseOnHover
-          style={onTopStyle}
+          style={STYLE_ABOVE}
         />
         <NavigationBar
           selectRoute={this.selectRoute.bind(this)}
           routes={routes}
         />
-        <div style={deltaStyle}>
-          {this.state.redirected
-            ? this.renderFromActive()
-            : this.renderFromRouter()}
+        <div style={STYLE_PADDED}>
+          {this.state.backendOkay === false
+            ? <p>Error! Cannot connect to the backend server.</p>
+            : this.state.redirected
+              ? this.renderFromActive()
+              : this.renderFromRouter()}
         </div>
       </div>
     );

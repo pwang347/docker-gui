@@ -9,7 +9,7 @@ import {
 } from "material-ui/Table";
 import CircularProgress from "material-ui/CircularProgress";
 import RaisedButton from "material-ui/RaisedButton";
-import truncateLongString from "../common.js";
+import { truncateLongString, BACKEND_ROOT_URL } from "../common";
 
 export class ContainerView extends React.Component {
   constructor(props) {
@@ -25,7 +25,7 @@ export class ContainerView extends React.Component {
 
   refresh() {
     var self = this;
-    var url = "http://localhost:8080/api/containers/list";
+    var url = BACKEND_ROOT_URL + "/api/containers/list";
     fetch(url)
       .then(function(response) {
         if (response.status >= 400) {
@@ -34,7 +34,7 @@ export class ContainerView extends React.Component {
         return response.json();
       })
       .then(function(json) {
-        console.log("parsed json", json);
+        console.log("Updated container list", json);
         return json;
       })
       .then(function(json) {
@@ -51,6 +51,7 @@ export class ContainerView extends React.Component {
   }
 
   componentDidMount() {
+    this.refresh.bind(this);
     this.interval = setInterval(this.refresh.bind(this), 1000);
   }
 
@@ -60,7 +61,6 @@ export class ContainerView extends React.Component {
 
   removeContainer() {
     var key = this.state.selectedRow;
-    console.log(key);
     var containers = this.state.containers;
     if (
       containers[key] == undefined ||
@@ -69,6 +69,15 @@ export class ContainerView extends React.Component {
       this.props.toast("This container is already being removed", "error");
       return;
     }
+    /* This doesn't actually get the docker-gui tag; might need to request it later
+    For now it's a feature, heh.
+    if (containers[key].image.includes("docker-gui:")) {
+      this.props.toast(
+        "Ha. You can't stop the docker GUI container unfortunately.",
+        "warning"
+      );
+      return;
+    }*/
     containers[key].disabled = true;
     var containerToRemoveID = containers[key].id;
     this.setState({
@@ -80,7 +89,7 @@ export class ContainerView extends React.Component {
     );
     var self = this;
     var url =
-      "http://localhost:8080/api/containers/stop?id=" + containerToRemoveID;
+      BACKEND_ROOT_URL + "/api/containers/stop?id=" + containerToRemoveID;
     fetch(url)
       .catch(function(ex) {
         self.props.toast(
@@ -100,7 +109,7 @@ export class ContainerView extends React.Component {
         return response.json();
       })
       .then(function(json) {
-        console.log("parsed json", json);
+        console.log("ID of stopped container", json);
         return json;
       })
       .then(function(json) {
@@ -134,7 +143,7 @@ export class ContainerView extends React.Component {
   }
 
   selectContainer(key) {
-    if (key !== undefined) this.setState({ selectedRow: key });
+    if (key !== undefined) this.setState({ selectedRow: key[0] }); // this is an array of all selected; but we've only enabled one at a time
   }
 
   renderTable() {
